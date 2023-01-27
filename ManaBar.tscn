@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+"
+
+[node name="ManaBar" type="Node2D"]
+script = SubResource( 1 )
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="Label" type="Label" parent="MarginContainer"]
+margin_top = 13.0
+margin_right = 40.0
+margin_bottom = 27.0
+text = "3"
