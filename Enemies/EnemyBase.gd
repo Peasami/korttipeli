@@ -12,6 +12,7 @@ var possibleAttackSlots = []
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	currentHealth = maxHealth
+	ConnectToEndTurn()
 	UpdateStats()
 	CheckPossibleAttackSlots()
 	Attack()
@@ -64,3 +65,10 @@ func TakeDamage(amount):
 
 func UpdateStats():
 	$VBoxContainer/HPNumber/Label.text = str(currentHealth)
+
+func ConnectToEndTurn():
+	var endTurn = $'../../EndTurn'
+	endTurn.connect("turnEnded", self, "_on_EndTurn_turnEnded")
+
+func _on_EndTurn_turnEnded(nextTurnNumber):
+	Attack()

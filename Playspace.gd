@@ -47,6 +47,7 @@ const playerHand = preload("res://Cards/PlayerHand.gd")
 const cardSlot = preload("res://Cards/CardSlot.tscn")
 const playerGraveyard = preload("res://Cards/PlayerGraveyard.gd")
 var cardDatabase = preload("res://Cards/CardDatabase.gd")
+
 onready var centerOfHand = Vector2(512, 500)
 var cardsInHand = []
 
@@ -96,10 +97,15 @@ func _ready():
 				$CardSlots.add_child(newSlot)
 				cardSlotEmpty.append(true)
 	
+#	var artifacts = load("res://PlayerStats.CurrentArtifacts.gd")
+	
 	SummonAnEnemy(22)
 #	SummonAUnit(12, "GiantDad")
 
 func DrawCard():
+	if deckSize == 0:
+		ReShuffleDeck()
+		return
 	
 	handSize += 1 # handsize is bigger
 	cardSelected = randi() % deckSize   # Generates random number from deck size
@@ -132,8 +138,8 @@ func DrawCard():
 	
 	return deckSize
 
+
 func _on_Card_summon(unitName, slotToSummonAUnit):
-	print("should summon?")
 	var unitInfo = cardDatabase.DATA[cardDatabase.get(unitName)]
 	var path = unitInfo[7]
 	var newUnit = load(path).instance()
@@ -151,7 +157,7 @@ func SummonAUnit(slotToSummonAUnit, unitName):
 
 func PutCardInGraveyard(cardName):
 	playerGraveyard.cardList.append(cardName)
-	print(playerGraveyard.cardList)
+	print("GRAVEYARD'S INHABITANTS: ",playerGraveyard.cardList)
 
 
 
@@ -183,3 +189,9 @@ func IncrementAttackCounter():
 	attackCounter += 1
 	print("attackCounter = ", attackCounter)
 
+func ReShuffleDeck():
+	var graveyardSize = playerGraveyard.cardList.size()
+	print("SHUFFLESHUFFLE", graveyardSize)
+	for i in graveyardSize:
+		print("Shuffling Graveyard:", i)
+	pass

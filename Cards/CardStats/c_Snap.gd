@@ -4,5 +4,5 @@ func _init():
 	SetName("Snap")
 
 func SpellEffect(enemy):
-	enemy.TakeDamage(int(cardAttack))
+	DealDamage(6, enemy)
 	$'../../'.IncrementAttackCounter()

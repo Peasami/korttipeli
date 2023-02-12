@@ -282,3 +282,5 @@ func PutCardToPreviousSlot():
 func SpellEffect(enemy):
 	pass
 
+func DealDamage(amount, target):
+	target.TakeDamage(int(cardAttack))
