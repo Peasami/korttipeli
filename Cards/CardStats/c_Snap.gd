@@ -2,7 +2,8 @@ extends "res://Cards/CardBase.gd"
 
 func _init():
 	SetName("Snap")
+	legalTargets = "Enemy"
 
-func SpellEffect(enemy):
-	DealDamage(6, enemy)
+func SpellEffect():
+	DealDamage(6)
 	$'../../'.IncrementAttackCounter()

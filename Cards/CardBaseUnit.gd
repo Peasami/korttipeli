@@ -1,6 +1,6 @@
 extends "res://Cards/CardBase.gd"
 
-signal summon_unit(summonedUnitName, summonedUnitSlotNumber)
+
 
 func OnPlayEffect(slotNumber):
 	emit_signal("summon_unit", cardName, slotNumber)

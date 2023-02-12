@@ -1,5 +1,6 @@
 extends MarginContainer     # Inherits properties from public class "MarginContainer"
 
+signal summon_unit(summonedUnitName, summonedUnitSlotNumber)
 
 const pos1 = Vector2(112,720)
 const pos2 = Vector2(212,710)
@@ -63,6 +64,9 @@ var cardText
 var cardType
 var playerStats
 
+var legalTargets = "Enemy"
+var slotToPlayCardOn
+var targetOfCard
 
 func SetName(cName):
 	cardName = cName
@@ -112,10 +116,7 @@ func _on_Focus_gui_input(event): # Called if mouse is over Focus, and input even
 	PrintStateOnHover()	# DEBUGGING
 	
 	if $Tween.is_active() == false: # if the card isn't moving
-		if cardType == "Unit":
-			MoveUnit(event)
-		elif cardType == "Spell":
-			MoveSpell(event)
+		MoveCard(event)
 	else:
 		alreadyWentToHand = false
 
@@ -176,7 +177,7 @@ func MoveUnit(event):
 		inHand, inMouseHand:
 			MoveUnitFromHand(event)
 
-func MoveSpell(event):
+func MoveCard(event):
 	match state:
 		inHand, inMouseHand:
 			if event.is_action_pressed("left_click"):
@@ -190,27 +191,29 @@ func MoveSpell(event):
 					print("Not enough mana!")
 					PutCardToHand()
 				elif isInMouse == true && alreadyWentToHand == false:
-					print(foundASlot)
 					var CardSlots = $'../../CardSlots'
 					var cardSlotEmpty = $'../../'.cardSlotEmpty
+					
 					for i in range(CardSlots.get_child_count()):
-						if cardSlotEmpty[i] == false:
-							# Checks mouse is ontop of slot
-							var cardSlotPos = CardSlots.get_child(i).rect_position - (cardSize - slotSize)/2
-							var cardSlotSize = CardSlots.get_child(i).rect_size
-							var localMousePos = CardSlots.get_child(i).get_local_mouse_position()
-							if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
-								$'../../'.ReorganizeHand(positionInHand)
-								var EnemiesInPlay = $'../../Enemies'
-								for Enemy in EnemiesInPlay.get_children():
-									if Enemy.cardSlotPos == i:
-										SpellEffect(Enemy)
-										PutCardToGraveyard()
-								foundASlot = true
+						var cardSlotPos = CardSlots.get_child(i).rect_position - (cardSize - slotSize)/2
+						var cardSlotSize = CardSlots.get_child(i).rect_size
+						var localMousePos = CardSlots.get_child(i).get_local_mouse_position()
+						if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
+							slotToPlayCardOn = i
+							FindTargetFromSlotNumber(slotToPlayCardOn)
 					if foundASlot == false:
 						PutCardToHand()
-					foundASlot = false
-					
+#						if cardSlotEmpty[i] == false:
+#							# Checks mouse is ontop of slot
+#							if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
+#								$'../../'.ReorganizeHand(positionInHand)
+#								var EnemiesInPlay = $'../../Enemies'
+#								for Enemy in EnemiesInPlay.get_children():
+#									if Enemy.cardSlotPos == i:
+#										SpellEffect()
+#										PutCardToGraveyard()
+#								foundASlot = true
+
 
 
 # Updates every frame (if mouse is moving over TextureButton)
@@ -279,8 +282,36 @@ func PutCardToPreviousSlot():
 	AnimateACard(mouseToHandTime, rect_position, previousPos)
 	state = inPlay
 
-func SpellEffect(enemy):
+func FindTargetFromSlotNumber(slotNumber):
+	if legalTargets == "Enemy":
+		var EnemiesInPlay = $'../../Enemies'
+		for Enemy in EnemiesInPlay.get_children():
+			if Enemy.cardSlotPos == slotNumber:
+				targetOfCard = Enemy
+				SpellEffect()
+				PutCardToGraveyard()
+				$'../../'.ReorganizeHand(positionInHand)
+				foundASlot = true
+				break
+		if foundASlot == false:
+			PutCardToHand()
+	elif legalTargets == "OwnEmpty":
+		if $'../../'.cardSlotEmpty[slotNumber] == true && slotNumber >= 0 && slotNumber <= 15:
+			targetOfCard = slotNumber
+			SpellEffect()
+			PutCardToGraveyard()
+			$'../../'.ReorganizeHand(positionInHand)
+			foundASlot = true
+		else:
+			PutCardToHand()
+
+func SpellEffect():
 	pass
 
-func DealDamage(amount, target):
-	target.TakeDamage(int(cardAttack))
+func DealDamage(amount):
+	targetOfCard.TakeDamage(int(cardAttack))
+
+func SummonAUnit(summonedUnitName, slotNumber):
+	emit_signal("summon_unit", summonedUnitName, slotNumber)
+	if is_connected("summon_unit", $'../../', "_on_Card_summon"):
+		disconnect("summon_unit", $'../../', "_on_Card_summon")
