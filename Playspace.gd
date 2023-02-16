@@ -13,7 +13,7 @@ enum{
 }
 
 var attackCounter = 0
-
+var maxHandSize = 5
 
 
 # Max hand size is 5
@@ -43,7 +43,7 @@ const cardSizeOnSlot = Vector2(150, 150)
 
 const enemy = preload("res://Enemies/EnemyBase.tscn")
 const cardBase = preload("res://Cards/CardBase.tscn")
-const playerHand = preload("res://Cards/PlayerHand.gd")
+const playerDeck = preload("res://Cards/PlayerDeck.gd")
 const cardSlot = preload("res://Cards/CardSlot.tscn")
 const playerGraveyard = preload("res://Cards/PlayerGraveyard.gd")
 var cardDatabase = preload("res://Cards/CardDatabase.gd")
@@ -54,7 +54,7 @@ var cardsInHand = []
 const animTime = 0.3
 
 var cardSelected = []
-onready var deckSize = playerHand.cardList.size() # decksize is hand's size
+onready var deckSize = playerDeck.cardList.size() # decksize is hand's size
 var handSize = 0
 
 var cardSlotEmpty = []
@@ -80,6 +80,7 @@ func _ready():
 	# makes new random seed
 	randomize()
 	
+	ConnectToEndTurn()
 	
 	#Makes grid of slots
 	# [0] [4]  [8] [12]   [16] [20] [24] [28]
@@ -100,17 +101,27 @@ func _ready():
 #	var artifacts = load("res://PlayerStats.CurrentArtifacts.gd")
 	
 	SummonAnEnemy(22)
+	SummonAnEnemy(23)
+	SummonAnEnemy(29)
 #	SummonAUnit(12, "GiantDad")
 
+func _process(delta):
+	if Input.is_action_just_released("ui_up"):
+		for Card in $Cards.get_children():
+			print(Card.cardName)
+
 func DrawCard():
-	if deckSize == 0:
-		ReShuffleDeck()
+	deckSize = playerDeck.cardList.size()
+	if handSize == maxHandSize:
 		return
-	
+	if deckSize == 0:
+		var isGYFull = ReShuffleDeck()
+		if isGYFull == 1:
+			return
 	handSize += 1 # handsize is bigger
 	cardSelected = randi() % deckSize   # Generates random number from deck size
 	
-	var cardName = playerHand.cardList[cardSelected]   # newCard's name is random from hand with int carSelected
+	var cardName = playerDeck.cardList[cardSelected]   # newCard's name is random from hand with int carSelected
 	var cardInfo = cardDatabase.DATA[cardDatabase.get(cardName)]
 	var path = cardInfo[6]
 	var newCard = load(path).instance()
@@ -130,13 +141,23 @@ func DrawCard():
 	newCard.AnimateACard(animTime, $PlayerDeck.position - newCard.rect_size/2, handCardPosition[newCard.positionInHand] - newCard.rect_size/2) # Animate card to hand
 	newCard.state = inHand
 	
-	playerHand.cardList.erase(playerHand.cardList[cardSelected])   # Remove from cardList a var with cardSeleted values
+	playerDeck.cardList.erase(playerDeck.cardList[cardSelected])   # Remove from cardList a var with cardSeleted values
 	deckSize -= 1  # reduce deckSize
 	
 	if newCard.cardType == "Unit":
 		newCard.connect("summon_unit", self, "_on_Card_summon")
-	
-	return deckSize
+
+func ConnectToEndTurn():
+	var endTurn = $'EndTurn'
+	endTurn.connect("turnEnded", self, "_on_EndTurn_turnEnded")
+
+func DiscardCard(positionForDiscarded):
+	for Card in $Cards.get_children():
+		if Card.positionInHand == positionForDiscarded:
+			ReorganizeHand(positionForDiscarded)
+			Card.PutCardToGraveyard()
+			
+
 
 
 func _on_Card_summon(unitName, slotToSummonAUnit):
@@ -191,7 +212,15 @@ func IncrementAttackCounter():
 
 func ReShuffleDeck():
 	var graveyardSize = playerGraveyard.cardList.size()
-	print("SHUFFLESHUFFLE", graveyardSize)
-	for i in graveyardSize:
+	if graveyardSize == 0:
+		print("RETURNING NULL FROM RESHUFFLEDECK")
+		return 1
+	for i in playerGraveyard.cardList:
+		playerDeck.cardList.append(i)
 		print("Shuffling Graveyard:", i)
-	pass
+		playerGraveyard.cardList.erase(i)
+	deckSize = playerDeck.cardList.size()
+
+func _on_EndTurn_turnEnded(nextTurnNumber):
+	for Card in $Cards.get_children():
+		DiscardCard(Card.positionInHand)

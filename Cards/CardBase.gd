@@ -67,6 +67,7 @@ var playerStats
 var legalTargets = "Enemy"
 var slotToPlayCardOn
 var targetOfCard
+var areaSize
 
 func SetName(cName):
 	cardName = cName
@@ -123,7 +124,7 @@ func _on_Focus_gui_input(event): # Called if mouse is over Focus, and input even
 func PrintStateOnHover():
 	testiming += 1
 	if testiming == 50:
-		print(state)
+		print(positionInHand)
 		testiming = 0
 
 func MoveUnitFromHand(event):
@@ -200,7 +201,14 @@ func MoveCard(event):
 						var localMousePos = CardSlots.get_child(i).get_local_mouse_position()
 						if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
 							slotToPlayCardOn = i
-							FindTargetFromSlotNumber(slotToPlayCardOn)
+							var foundTarget = FindTargetFromSlotNumber(slotToPlayCardOn, legalTargets)
+							if foundTarget != null:
+								targetOfCard = foundTarget
+								playerStats.ReduceMana(int(cardCost))
+								SpellEffect()
+								$'../../'.ReorganizeHand(positionInHand)
+								PutCardToGraveyard()
+								foundASlot = true
 					if foundASlot == false:
 						PutCardToHand()
 #						if cardSlotEmpty[i] == false:
@@ -249,7 +257,6 @@ func AnimateACard(timeOfAnimation, startingPos, endingPos):
 		startingPos, endingPos, timeOfAnimation,
 		Tween.TRANS_CUBIC, Tween.EASE_IN_OUT)
 	$Tween.start()
-	
 
 func PutCardToGraveyard():
 	print(cardName, (" is put to graveyard"))
@@ -257,6 +264,7 @@ func PutCardToGraveyard():
 	AnimateACard(mouseToHandTime, rect_position, graveYardPos)
 	$'../../'.PutCardInGraveyard(cardName)
 	rect_scale = Vector2(0.5, 0.5)
+	positionInHand = null
 
 func DIECARD():
 	currentHealth = maxHealth
@@ -282,36 +290,43 @@ func PutCardToPreviousSlot():
 	AnimateACard(mouseToHandTime, rect_position, previousPos)
 	state = inPlay
 
-func FindTargetFromSlotNumber(slotNumber):
-	if legalTargets == "Enemy":
+func FindTargetFromSlotNumber(slotNumber, targetsToAffect):
+	if targetsToAffect == "Enemy":
 		var EnemiesInPlay = $'../../Enemies'
 		for Enemy in EnemiesInPlay.get_children():
 			if Enemy.cardSlotPos == slotNumber:
-				targetOfCard = Enemy
-				SpellEffect()
-				PutCardToGraveyard()
-				$'../../'.ReorganizeHand(positionInHand)
-				foundASlot = true
+				return Enemy
 				break
 		if foundASlot == false:
-			PutCardToHand()
-	elif legalTargets == "OwnEmpty":
+			return null
+	elif targetsToAffect == "OwnEmpty":
 		if $'../../'.cardSlotEmpty[slotNumber] == true && slotNumber >= 0 && slotNumber <= 15:
-			targetOfCard = slotNumber
-			SpellEffect()
-			PutCardToGraveyard()
-			$'../../'.ReorganizeHand(positionInHand)
-			foundASlot = true
+			return slotNumber
 		else:
-			PutCardToHand()
+			return null
+	elif targetsToAffect == "EnemyArea":
+		if slotNumber >= 16 && slotNumber <= 31:
+			return slotNumber
+		else:
+			return null
 
 func SpellEffect():
 	pass
 
-func DealDamage(amount):
-	targetOfCard.TakeDamage(int(cardAttack))
+func DealDamage(amount, target = targetOfCard):
+	if target != null:
+		target.TakeDamage(int(cardAttack))
 
 func SummonAUnit(summonedUnitName, slotNumber):
 	emit_signal("summon_unit", summonedUnitName, slotNumber)
 	if is_connected("summon_unit", $'../../', "_on_Card_summon"):
 		disconnect("summon_unit", $'../../', "_on_Card_summon")
+
+	#WIP__________________________
+func AreaDamage(dmg, xSize, ySize, targetsToAffect):
+	var stp = slotToPlayCardOn
+	var slotNumbersToAffect = [stp-5, stp-4, stp-3, stp-1, stp, stp+1, stp+3, stp+4, stp+5]
+	for i in slotNumbersToAffect:
+		if i >= 16 && i <= 31:
+			var enemyTarget = FindTargetFromSlotNumber(i, targetsToAffect)
+			DealDamage(dmg, enemyTarget)

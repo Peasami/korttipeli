@@ -72,3 +72,4 @@ func ConnectToEndTurn():
 
 func _on_EndTurn_turnEnded(nextTurnNumber):
 	Attack()
+

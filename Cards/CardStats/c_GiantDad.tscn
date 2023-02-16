@@ -3,5 +3,5 @@
 [ext_resource path="res://Cards/CardStats/c_GiantDad.gd" type="Script" id=1]
 [ext_resource path="res://Cards/CardBase.tscn" type="PackedScene" id=2]
 
-[node name="c_GiantDad" instance=ExtResource( 2 )]
+[node name="CardBase" instance=ExtResource( 2 )]
 script = ExtResource( 1 )

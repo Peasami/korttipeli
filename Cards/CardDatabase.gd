@@ -1,6 +1,6 @@
 # UnitInfo = [Type, name, Cost, Attack, Health, special info]
 
-enum{BigMan, SmallMan, Skeletron, Snek, GiantDad, Snap}
+enum{BigMan, SmallMan, Skeletron, Snek, GiantDad, Snap, Meteorite}
 
 const DATA ={
 	BigMan:
@@ -14,7 +14,9 @@ const DATA ={
 	GiantDad:
 		["Unit","GiantDad", 4, 4, 5, "Takes 1 less damage", "res://Cards/CardStats/c_GiantDad.tscn", "res://Units/UnitEffects/u_GiantDad.tscn"],
 	Snap:
-		["Spell","Snap", 1, "Deals 6 damage to one unit", 6, null, "res://Cards/CardStats/c_Snap.tscn"]
+		["Spell","Snap", 1, "Deals 6 damage to one unit", 6, null, "res://Cards/CardStats/c_Snap.tscn"], 
+	Meteorite:
+		["Spell","Meteorite", 1, "Deals 2 damage to enemies in 3x3 area", 2, null, "res://Cards/CardStats/c_Meteorite.tscn"]
 }
 
 func Damage(attackerName):
