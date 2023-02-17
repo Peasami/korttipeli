@@ -14,7 +14,7 @@ enum{
 
 var attackCounter = 0
 var maxHandSize = 5
-
+var graveYardPos = Vector2(0, 0)
 
 # Max hand size is 5
 # Positions for cards in hand
@@ -45,16 +45,20 @@ const enemy = preload("res://Enemies/EnemyBase.tscn")
 const cardBase = preload("res://Cards/CardBase.tscn")
 const playerDeck = preload("res://Cards/PlayerDeck.gd")
 const cardSlot = preload("res://Cards/CardSlot.tscn")
-const playerGraveyard = preload("res://Cards/PlayerGraveyard.gd")
+const playerGraveyard = preload("res://Cards/PlayerGraveyard.gd")   #SHOULD BE USELESS
 var cardDatabase = preload("res://Cards/CardDatabase.gd")
 
+
+onready var playerDeckPosition = $PlayerDeck.position
 onready var centerOfHand = Vector2(512, 500)
 var cardsInHand = []
+var cardsInDeck = []
+var cardsInGraveyard = []
 
 const animTime = 0.3
 
 var cardSelected = []
-onready var deckSize = playerDeck.cardList.size() # decksize is hand's size
+var deckSize
 var handSize = 0
 
 var cardSlotEmpty = []
@@ -79,15 +83,105 @@ onready var widthForCard = (cardSlotTotalWidth - (numberOfColumns - 1) * cardSlo
 func _ready():
 	# makes new random seed
 	randomize()
-	
 	ConnectToEndTurn()
 	
-	#Makes grid of slots
-	# [0] [4]  [8] [12]   [16] [20] [24] [28]
-	# [1] [5]  [9] [13]   [17] [21] [25] [29]
-	# [2] [6] [10] [14]   [18] [22] [26] [30]
-	# [3] [7] [11] [15]   [19] [23] [27] [31]
+	MakeGrid()
 	
+	for i in playerDeck.cardList:
+		var newCard = InstanceNewCard(i)
+		newCard.state = inDeck
+		cardsInDeck.append(newCard)
+		if newCard.cardType == "Unit":
+			newCard.connect("summon_unit", self, "_on_Card_summon")
+#		print("HELLO, I HAVE A ",i," FOR YOU")
+#	print("DECKSIZE: ",cardsInDeck.size())
+	
+#	cardSelected = randi() % deckSize   # Generates random number from deck size
+#	var cardName = playerDeck.cardList[cardSelected]   # newCard's name is random from hand with int carSelected
+#	var cardInfo = cardDatabase.DATA[cardDatabase.get(cardName)]
+	
+	SummonAnEnemy(22)
+	SummonAnEnemy(23)
+	SummonAnEnemy(29)
+#	SummonAUnit(12, "GiantDad")
+
+func _process(delta):
+	if Input.is_action_just_released("ui_up"):
+		print(cardsInDeck)
+		print(cardsInDeck.size())
+		pass
+	elif Input.is_action_just_released("ui_down"):
+		print(cardsInGraveyard)
+		print(cardsInGraveyard.size())
+		pass
+	elif Input.is_action_just_released("ui_right"):
+		print(cardsInHand)
+		print(cardsInHand.size())
+		pass
+	elif Input.is_key_pressed(KEY_K):
+		print("CARDSTATES: ")
+		for Card in $Cards.get_children():
+			print(Card.state)
+
+func InstanceNewCard(nameOfNewCard):
+	var cardInfo = cardDatabase.DATA[cardDatabase.get(nameOfNewCard)]
+	var cardPath = cardInfo[6]
+	var newCard = load(cardPath).instance()
+	$Cards.add_child(newCard, true)
+	return newCard
+
+
+func DrawCard():
+	
+	if cardsInHand.size() == maxHandSize:
+		return
+	if cardsInDeck.size() == 0:
+		var isGYFull = ReShuffleDeck()
+		if isGYFull == 1: #if there's no graveyard
+			return
+	
+#	handSize += 1
+#	cardSelected = randi() % deckSize   # Generates random number from deck size
+	
+#	var cardName = playerDeck.cardList[cardSelected]   # newCard's name is random from hand with int carSelected
+#	var cardInfo = cardDatabase.DATA[cardDatabase.get(cardName)]
+#	var path = cardInfo[6]
+#	var newCard = load(path).instance()
+	
+	cardSelected = randi() % cardsInDeck.size()
+	var newCard = cardsInDeck[cardSelected]
+	
+	MoveCardBetweenZones(newCard, cardsInDeck, cardsInHand)
+	newCard.positionInHand = 4 + (cardsInHand.size())
+	ReorganizeHand(-newCard.positionInHand)
+#	$Cards.add_child(newCard)      # child of Cards
+	
+	newCard.AnimateACard(animTime, playerDeckPosition - newCard.rect_size/2, handCardPosition[newCard.positionInHand] - newCard.rect_size/2) # Animate card to hand
+	
+	newCard.state = inHand
+	
+#	playerDeck.cardList.erase(playerDeck.cardList[cardSelected])   # Remove from cardList a var with cardSeleted values
+#	deckSize -= 1  # reduce deckSize
+	
+	
+
+func ConnectToEndTurn():
+	var endTurn = $'EndTurn'
+	endTurn.connect("turnEnded", self, "_on_EndTurn_turnEnded")
+
+func DiscardCard(positionForDiscarded):
+	for Card in $Cards.get_children():
+		if Card.positionInHand == positionForDiscarded && Card.state == inHand:
+			ReorganizeHand(positionForDiscarded)
+			ReduceHandSize(1)
+			Card.PutCardToGraveyard()
+
+#Makes grid of slots
+# [0] [4]  [8] [12]   [16] [20] [24] [28]
+# [1] [5]  [9] [13]   [17] [21] [25] [29]
+# [2] [6] [10] [14]   [18] [22] [26] [30]
+# [3] [7] [11] [15]   [19] [23] [27] [31]
+func MakeGrid():
 	for i in range(2):
 		for j in range(numberOfColumns):
 			for k in range(numberOfRows):
@@ -97,68 +191,9 @@ func _ready():
 					+ j * Vector2(slotSize.x + cardSlotGapsX, 0) + i * Vector2(cardSlotTotalWidth + middleMarginX, 0)
 				$CardSlots.add_child(newSlot)
 				cardSlotEmpty.append(true)
-	
-#	var artifacts = load("res://PlayerStats.CurrentArtifacts.gd")
-	
-	SummonAnEnemy(22)
-	SummonAnEnemy(23)
-	SummonAnEnemy(29)
-#	SummonAUnit(12, "GiantDad")
 
-func _process(delta):
-	if Input.is_action_just_released("ui_up"):
-		for Card in $Cards.get_children():
-			print(Card.cardName)
-
-func DrawCard():
-	deckSize = playerDeck.cardList.size()
-	if handSize == maxHandSize:
-		return
-	if deckSize == 0:
-		var isGYFull = ReShuffleDeck()
-		if isGYFull == 1:
-			return
-	handSize += 1 # handsize is bigger
-	cardSelected = randi() % deckSize   # Generates random number from deck size
-	
-	var cardName = playerDeck.cardList[cardSelected]   # newCard's name is random from hand with int carSelected
-	var cardInfo = cardDatabase.DATA[cardDatabase.get(cardName)]
-	var path = cardInfo[6]
-	var newCard = load(path).instance()
-	newCard.positionInHand = 4 + (handSize - 1)         # Increase first number if max hand size grows
-	newCard.rect_size = cardSize # newCard scale (default scale is (1, 1))
-	
-	
-	# reorganize cards already in hand
-	for Card in $Cards.get_children():
-		if Card.state == inHand:
-			Card.positionInHand -= 1 # new position in hand
-			Card.AnimateACard(animTime, Card.rect_position, handCardPosition[Card.positionInHand] - Card.rect_size/2) # Aand animate
-			Card.state = inHand
-			print("PositionInHan: ", Card.positionInHand)
-	$Cards.add_child(newCard)      # child of Cards
-	
-	newCard.AnimateACard(animTime, $PlayerDeck.position - newCard.rect_size/2, handCardPosition[newCard.positionInHand] - newCard.rect_size/2) # Animate card to hand
-	newCard.state = inHand
-	
-	playerDeck.cardList.erase(playerDeck.cardList[cardSelected])   # Remove from cardList a var with cardSeleted values
-	deckSize -= 1  # reduce deckSize
-	
-	if newCard.cardType == "Unit":
-		newCard.connect("summon_unit", self, "_on_Card_summon")
-
-func ConnectToEndTurn():
-	var endTurn = $'EndTurn'
-	endTurn.connect("turnEnded", self, "_on_EndTurn_turnEnded")
-
-func DiscardCard(positionForDiscarded):
-	for Card in $Cards.get_children():
-		if Card.positionInHand == positionForDiscarded:
-			ReorganizeHand(positionForDiscarded)
-			Card.PutCardToGraveyard()
-			
-
-
+func ReduceHandSize(amount):
+	handSize -= amount
 
 func _on_Card_summon(unitName, slotToSummonAUnit):
 	var unitInfo = cardDatabase.DATA[cardDatabase.get(unitName)]
@@ -177,27 +212,41 @@ func SummonAUnit(slotToSummonAUnit, unitName):
 	$Units.add_child(newUnit)
 
 func PutCardInGraveyard(cardName):
-	playerGraveyard.cardList.append(cardName)
-	print("GRAVEYARD'S INHABITANTS: ",playerGraveyard.cardList)
+	MoveCardBetweenZones(cardName, cardsInHand, cardsInGraveyard)
+#	print("GRAVEYARD'S INHABITANTS: ",playerGraveyard.cardList)
 
+func PutUnitInGraveyard(cardName):
+	pass
 
+func MoveCardBetweenZones(card, startZone, endZone):
+#	print("STARTZONE BEFORE: ",startZone)
+	startZone.erase(card)
+	endZone.append(card)
+	match endZone:
+		cardsInGraveyard:
+			print("CARDSINGRAVEYARDMOVEBETWEENZONES: ", card.state)
+			card.state = inGraveyard
+		cardsInHand:
+			card.state = inHand
+		cardsInDeck:
+			card.state = inDeck
+		_:
+			print("EEEEEEEEEEEEEEEERROOOOOOOOOOOOOOOR, NO MATCHING STATE FOR ZONE")
 
 #Called when card is moved away from hand
 #Reorganizes rest of handhn   
 func ReorganizeHand(cardPos):
-	handSize -= 1
-	for Card in $Cards.get_children():
-		if Card.state == inHand:
-			if Card.positionInHand < cardPos:
-				Card.positionInHand += 1
-				Card.AnimateACard(animTime, Card.rect_position, handCardPosition[Card.positionInHand] - Card.rect_size/2) # Aand animate
-				Card.state = inHand
-			elif Card.positionInHand > cardPos:
-				Card.positionInHand -= 1
-				Card.startPos = Card.rect_position # starting position
-				Card.targetPos = handCardPosition[Card.positionInHand] - Card.rect_size/2  # target position
-				Card.AnimateACard(animTime, Card.rect_position, handCardPosition[Card.positionInHand] - Card.rect_size/2) # Aand animate
-				Card.state = inHand
+	for Card in cardsInHand:
+		if Card.positionInHand < cardPos:
+			Card.positionInHand += 1
+			Card.AnimateACard(animTime, Card.rect_position, handCardPosition[Card.positionInHand] - Card.rect_size/2) # Aand animate
+			Card.state = inHand
+		elif Card.positionInHand > cardPos:
+			Card.positionInHand -= 1
+			Card.startPos = Card.rect_position # starting position
+			Card.targetPos = handCardPosition[Card.positionInHand] - Card.rect_size/2  # target position
+			Card.AnimateACard(animTime, Card.rect_position, handCardPosition[Card.positionInHand] - Card.rect_size/2) # Aand animate
+			Card.state = inHand
 
 func SummonAnEnemy(slotToSummonAnEnemy):
 	var newEnemy = enemy.instance()
@@ -211,16 +260,22 @@ func IncrementAttackCounter():
 	print("attackCounter = ", attackCounter)
 
 func ReShuffleDeck():
-	var graveyardSize = playerGraveyard.cardList.size()
-	if graveyardSize == 0:
+	if cardsInGraveyard.size() == 0:
 		print("RETURNING NULL FROM RESHUFFLEDECK")
 		return 1
-	for i in playerGraveyard.cardList:
-		playerDeck.cardList.append(i)
-		print("Shuffling Graveyard:", i)
-		playerGraveyard.cardList.erase(i)
-	deckSize = playerDeck.cardList.size()
+	while cardsInGraveyard.size() > 0:
+		var cardToMove = cardsInGraveyard[0]
+		MoveCardBetweenZones(cardToMove, cardsInGraveyard, cardsInDeck)
+	return null
 
 func _on_EndTurn_turnEnded(nextTurnNumber):
-	for Card in $Cards.get_children():
+	var i = 0
+	var tempArrayForCards = []
+	for Card in cardsInHand:
+		tempArrayForCards.append(Card)
+		i += 1
+	for Card in tempArrayForCards:
 		DiscardCard(Card.positionInHand)
+	DrawCard()
+	DrawCard()
+	DrawCard()

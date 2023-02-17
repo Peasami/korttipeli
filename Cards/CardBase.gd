@@ -112,6 +112,9 @@ var testiming = 0
 var foundASlot = false
 var isInMouse = false
 
+#func _process(delta):
+#	if Input.is_action_just_released("ui_up"):
+#		print("inside cardBase: ",self)
 
 func _on_Focus_gui_input(event): # Called if mouse is over Focus, and input event occurs
 	PrintStateOnHover()	# DEBUGGING
@@ -126,57 +129,6 @@ func PrintStateOnHover():
 	if testiming == 50:
 		print(positionInHand)
 		testiming = 0
-
-func MoveUnitFromHand(event):
-	if event.is_action_pressed("left_click"):
-		DragCardInPlayspace(inMouseHand)
-
-	# Right click always moves card to hand
-	if event.is_action_pressed("right_click"):
-		if isInMouse == true:
-			alreadyWentToHand = true
-			PutCardToHand()
-
-	# Looks if mouse is on top of a cardslot and functions accordingly
-	if event.is_action_released("left_click"):
-		if playerStats.IsEnoughMana(int(cardCost)) == false:
-			print("Not enough mana!")
-			PutCardToHand()
-		elif isInMouse == true && alreadyWentToHand == false:
-			# Handles dropping on cardslots
-			var CardSlots = $'../../CardSlots'
-			var cardSlotEmpty = $'../../'.cardSlotEmpty
-			for i in range(CardSlots.get_child_count()): # Checks for each cardslot on board
-				if cardSlotEmpty[i] && i >= minSlotValueForCard && i <= maxSlotValueForCard:
-					# Checks mouse is ontop of slot
-					var cardSlotSize = CardSlots.get_child(i).rect_size
-					var localMousePos = CardSlots.get_child(i).get_local_mouse_position()
-					if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
-						OnCardPlay(i)
-						break
-			if foundASlot == false:
-				PutCardToHand()
-			foundASlot = false
-	else:
-		alreadyWentToHand = false
-
-func OnCardPlay(slotPlayedOn):
-	OnPlayEffect(slotPlayedOn)
-	AnimateACard(mouseToHandTime, rect_position, graveYardPos)
-	state = inGraveyard
-	$'../../'.ReorganizeHand(positionInHand)
-	playerStats.ReduceMana(int(cardCost))
-	foundASlot = true
-	isInMouse = false
-
-func OnPlayEffect(slotNumber):
-	pass
-
-func MoveUnit(event):
-	match state:
-		# Handles if dragging from hand
-		inHand, inMouseHand:
-			MoveUnitFromHand(event)
 
 func MoveCard(event):
 	match state:
@@ -207,20 +159,11 @@ func MoveCard(event):
 								playerStats.ReduceMana(int(cardCost))
 								SpellEffect()
 								$'../../'.ReorganizeHand(positionInHand)
+								$'../../'.ReduceHandSize(1)
 								PutCardToGraveyard()
 								foundASlot = true
 					if foundASlot == false:
 						PutCardToHand()
-#						if cardSlotEmpty[i] == false:
-#							# Checks mouse is ontop of slot
-#							if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
-#								$'../../'.ReorganizeHand(positionInHand)
-#								var EnemiesInPlay = $'../../Enemies'
-#								for Enemy in EnemiesInPlay.get_children():
-#									if Enemy.cardSlotPos == i:
-#										SpellEffect()
-#										PutCardToGraveyard()
-#								foundASlot = true
 
 
 
@@ -259,12 +202,10 @@ func AnimateACard(timeOfAnimation, startingPos, endingPos):
 	$Tween.start()
 
 func PutCardToGraveyard():
-	print(cardName, (" is put to graveyard"))
-	state = inGraveyard
+#	print(cardName, (" is put to graveyard"))
 	AnimateACard(mouseToHandTime, rect_position, graveYardPos)
-	$'../../'.PutCardInGraveyard(cardName)
+	$'../../'.PutCardInGraveyard(self)
 	rect_scale = Vector2(0.5, 0.5)
-	positionInHand = null
 
 func DIECARD():
 	currentHealth = maxHealth

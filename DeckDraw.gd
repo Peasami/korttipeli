@@ -12,7 +12,7 @@ func _ready():
 
 func _gui_input(event):
 	if Input.is_action_just_released("left_click"):
-		deckSize = $'../../'.DrawCard()  # Calls DrawCard func, which also returns size of deck
+		$'../../'.DrawCard()  # Calls DrawCard func, which also returns size of deck
 
 
 func ReShuffleDeck():

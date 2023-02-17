@@ -170,7 +170,7 @@ func PutCardToGraveyard():
 	print(unitName, (" is put to graveyard"))
 	state = inGraveyard
 	AnimateACard(animationTime, rect_position, graveYardPos)
-	$'../../'.PutCardInGraveyard(unitName)
+	$'../../'.PutUnitInGraveyard(unitName)
 	rect_scale = Vector2(0.5, 0.5)
 
 func UpdateStats():
