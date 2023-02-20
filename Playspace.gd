@@ -45,7 +45,6 @@ const enemy = preload("res://Enemies/EnemyBase.tscn")
 const cardBase = preload("res://Cards/CardBase.tscn")
 const playerDeck = preload("res://Cards/PlayerDeck.gd")
 const cardSlot = preload("res://Cards/CardSlot.tscn")
-const playerGraveyard = preload("res://Cards/PlayerGraveyard.gd")   #SHOULD BE USELESS
 var cardDatabase = preload("res://Cards/CardDatabase.gd")
 
 
@@ -103,7 +102,6 @@ func _ready():
 	SummonAnEnemy(22)
 	SummonAnEnemy(23)
 	SummonAnEnemy(29)
-#	SummonAUnit(12, "GiantDad")
 
 func _process(delta):
 	if Input.is_action_just_released("ui_up"):

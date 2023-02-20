@@ -260,8 +260,8 @@ func DealDamage(amount, target = targetOfCard):
 
 func SummonAUnit(summonedUnitName, slotNumber):
 	emit_signal("summon_unit", summonedUnitName, slotNumber)
-	if is_connected("summon_unit", $'../../', "_on_Card_summon"):
-		disconnect("summon_unit", $'../../', "_on_Card_summon")
+#	if is_connected("summon_unit", $'../../', "_on_Card_summon"):
+#		disconnect("summon_unit", $'../../', "_on_Card_summon")
 
 	#WIP__________________________
 func AreaDamage(dmg, xSize, ySize, targetsToAffect):

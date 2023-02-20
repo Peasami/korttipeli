@@ -41,17 +41,34 @@ func CheckPossibleAttackSlots():
 		possibleAttackSlots.append(possibleAttackSlots[i] - 4)
 	print("possibleAttackSlots: ", possibleAttackSlots)
 
+func CheckOccupiedSlots(slotsToCheck):
+	var slotsWithUnit = []
+	var cardSlotEmpty = $'../../'.cardSlotEmpty
+	for i in slotsToCheck:
+		print("cardslotempty: ", cardSlotEmpty[i])
+		print("i: ", i)
+		if cardSlotEmpty[i] == false:
+			slotsWithUnit.append(i)
+	print("SlotsToCheck: ", slotsWithUnit)
+	return slotsWithUnit
+
+
 func Attack():
 #	var CardSlots = $'../../CardSlots'
 	var cardSlotEmpty = $'../../'.cardSlotEmpty
-	for i in possibleAttackSlots:
-#		var childCard = CardSlots.get_child(i)
-		if cardSlotEmpty[i] == false:
-			var UnitsInPlay = $'../../Units'
-			for Unit in UnitsInPlay.get_children():
-				if Unit.currentSlotNumber == i:
-					Unit.DamageTaken(enemyAttack)
-					break
+	var slotsWithUnit = CheckOccupiedSlots(possibleAttackSlots)
+	print("SlotsWithUnit.back(): ", slotsWithUnit.back())
+	if slotsWithUnit.back() == null:
+		return
+	print("possibleattacaslots: ", possibleAttackSlots)
+	var firstTarget = slotsWithUnit.max()
+	print("firstTarget: ", firstTarget)
+	var UnitsInPlay = $'../../Units'
+	for i in UnitsInPlay.get_children():
+		if i.currentSlotNumber == firstTarget:
+			i.DamageTaken(enemyAttack)
+			break
+
 
 func SetCurrentSlot(number):
 	cardSlotPos = number
@@ -62,6 +79,8 @@ func SetCurrentSlot(number):
 func TakeDamage(amount):
 	currentHealth -= amount
 	UpdateStats()
+	if currentHealth <= 0:
+		KillUnit()
 
 func UpdateStats():
 	$VBoxContainer/HPNumber/Label.text = str(currentHealth)
@@ -73,3 +92,5 @@ func ConnectToEndTurn():
 func _on_EndTurn_turnEnded(nextTurnNumber):
 	Attack()
 
+func KillUnit():
+	pass
