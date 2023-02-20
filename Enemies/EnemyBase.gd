@@ -39,17 +39,13 @@ func CheckPossibleAttackSlots():
 	possibleAttackSlots.append(cardSlotPos - 4)
 	for i in availableSlots:
 		possibleAttackSlots.append(possibleAttackSlots[i] - 4)
-	print("possibleAttackSlots: ", possibleAttackSlots)
 
 func CheckOccupiedSlots(slotsToCheck):
 	var slotsWithUnit = []
 	var cardSlotEmpty = $'../../'.cardSlotEmpty
 	for i in slotsToCheck:
-		print("cardslotempty: ", cardSlotEmpty[i])
-		print("i: ", i)
 		if cardSlotEmpty[i] == false:
 			slotsWithUnit.append(i)
-	print("SlotsToCheck: ", slotsWithUnit)
 	return slotsWithUnit
 
 
@@ -57,12 +53,9 @@ func Attack():
 #	var CardSlots = $'../../CardSlots'
 	var cardSlotEmpty = $'../../'.cardSlotEmpty
 	var slotsWithUnit = CheckOccupiedSlots(possibleAttackSlots)
-	print("SlotsWithUnit.back(): ", slotsWithUnit.back())
-	if slotsWithUnit.back() == null:
+	if slotsWithUnit.empty() == true:
 		return
-	print("possibleattacaslots: ", possibleAttackSlots)
 	var firstTarget = slotsWithUnit.max()
-	print("firstTarget: ", firstTarget)
 	var UnitsInPlay = $'../../Units'
 	for i in UnitsInPlay.get_children():
 		if i.currentSlotNumber == firstTarget:
@@ -74,7 +67,6 @@ func SetCurrentSlot(number):
 	cardSlotPos = number
 	var cardSlotEmpty = $'../../'.cardSlotEmpty
 	cardSlotEmpty[cardSlotPos] = false
-	print("CurrentSlotNumber: ", cardSlotPos)
 
 func TakeDamage(amount):
 	currentHealth -= amount

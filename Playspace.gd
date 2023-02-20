@@ -129,39 +129,26 @@ func InstanceNewCard(nameOfNewCard):
 	return newCard
 
 
-func DrawCard():
-	
-	if cardsInHand.size() == maxHandSize:
-		return
-	if cardsInDeck.size() == 0:
-		var isGYFull = ReShuffleDeck()
-		if isGYFull == 1: #if there's no graveyard
+func DrawCard(amount = 1):
+	print("AMOUNT = ", amount)
+	for i in range(amount):
+		if cardsInHand.size() == maxHandSize:
 			return
-	
-#	handSize += 1
-#	cardSelected = randi() % deckSize   # Generates random number from deck size
-	
-#	var cardName = playerDeck.cardList[cardSelected]   # newCard's name is random from hand with int carSelected
-#	var cardInfo = cardDatabase.DATA[cardDatabase.get(cardName)]
-#	var path = cardInfo[6]
-#	var newCard = load(path).instance()
-	
-	cardSelected = randi() % cardsInDeck.size()
-	var newCard = cardsInDeck[cardSelected]
-	
-	MoveCardBetweenZones(newCard, cardsInDeck, cardsInHand)
-	newCard.positionInHand = 4 + (cardsInHand.size())
-	ReorganizeHand(-newCard.positionInHand)
-#	$Cards.add_child(newCard)      # child of Cards
-	
-	newCard.AnimateACard(animTime, playerDeckPosition - newCard.rect_size/2, handCardPosition[newCard.positionInHand] - newCard.rect_size/2) # Animate card to hand
-	
-	newCard.state = inHand
-	
-#	playerDeck.cardList.erase(playerDeck.cardList[cardSelected])   # Remove from cardList a var with cardSeleted values
-#	deckSize -= 1  # reduce deckSize
-	
-	
+		if cardsInDeck.size() == 0:
+			var isGYFull = ReShuffleDeck()
+			if isGYFull == 1: #if there's no graveyard
+				return
+		
+		cardSelected = randi() % cardsInDeck.size()
+		var newCard = cardsInDeck[cardSelected]
+		
+		MoveCardBetweenZones(newCard, cardsInDeck, cardsInHand)
+		newCard.positionInHand = 4 + (cardsInHand.size())
+		ReorganizeHand(-newCard.positionInHand)
+		
+		newCard.AnimateACard(animTime, playerDeckPosition - newCard.rect_size/2, handCardPosition[newCard.positionInHand] - newCard.rect_size/2) # Animate card to hand
+		newCard.state = inHand
+
 
 func ConnectToEndTurn():
 	var endTurn = $'EndTurn'
@@ -274,6 +261,4 @@ func _on_EndTurn_turnEnded(nextTurnNumber):
 		i += 1
 	for Card in tempArrayForCards:
 		DiscardCard(Card.positionInHand)
-	DrawCard()
-	DrawCard()
-	DrawCard()
+	DrawCard(5)
