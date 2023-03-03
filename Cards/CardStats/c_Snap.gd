@@ -5,5 +5,5 @@ func _init():
 	legalTargets = "Enemy"
 
 func SpellEffect():
-	DealDamage(6)
+	Actions.DealDamage(6, targetOfCard)
 	$'../../'.IncrementAttackCounter()

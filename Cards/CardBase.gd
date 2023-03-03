@@ -14,6 +14,8 @@ const pos9 = Vector2(912,720)
 const handCardPosition = [pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8, pos9]
 
 onready var CardDatabase = preload("res://Cards/CardDatabase.gd")  # when available, gets CardDatabase. Allows this code to access it
+onready var Actions = $ActionLibrary
+
 var cardName
 # from CardDatabase.DATA, gets the value of "cardName" and stores all fields in var 
 # (for example, ".get("SmallMan") : Unit","SmallMan", 1, 2, 1, " "
@@ -103,7 +105,6 @@ func _ready():
 		
 	
 	playerStats = get_node('../../PlayerStats')
-	
 
 
 var CARD_SELECT = true
@@ -227,7 +228,7 @@ func PutCardToHand():
 	state = inHand
 
 func PutCardToPreviousSlot():
-	rect_scale = Vector2(0.5, 0.5)
+	rect_scale = Vector2(1, 1)
 	AnimateACard(mouseToHandTime, rect_position, previousPos)
 	state = inPlay
 
@@ -237,9 +238,7 @@ func FindTargetFromSlotNumber(slotNumber, targetsToAffect):
 		for Enemy in EnemiesInPlay.get_children():
 			if Enemy.cardSlotPos == slotNumber:
 				return Enemy
-				break
-		if foundASlot == false:
-			return null
+		return null
 	elif targetsToAffect == "OwnEmpty":
 		if $'../../'.cardSlotEmpty[slotNumber] == true && slotNumber >= 0 && slotNumber <= 15:
 			return slotNumber
@@ -260,8 +259,6 @@ func DealDamage(amount, target = targetOfCard):
 
 func SummonAUnit(summonedUnitName, slotNumber):
 	emit_signal("summon_unit", summonedUnitName, slotNumber)
-#	if is_connected("summon_unit", $'../../', "_on_Card_summon"):
-#		disconnect("summon_unit", $'../../', "_on_Card_summon")
 
 	#WIP__________________________
 func AreaDamage(dmg, xSize, ySize, targetsToAffect):

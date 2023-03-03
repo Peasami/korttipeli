@@ -90,14 +90,9 @@ func _ready():
 		var newCard = InstanceNewCard(i)
 		newCard.state = inDeck
 		cardsInDeck.append(newCard)
-		if newCard.cardType == "Unit":
-			newCard.connect("summon_unit", self, "_on_Card_summon")
-#		print("HELLO, I HAVE A ",i," FOR YOU")
-#	print("DECKSIZE: ",cardsInDeck.size())
+		var newCardActions = newCard.get_node("ActionLibrary")
+		$ActionLibraryBase.ConnectSignals(newCardActions)
 	
-#	cardSelected = randi() % deckSize   # Generates random number from deck size
-#	var cardName = playerDeck.cardList[cardSelected]   # newCard's name is random from hand with int carSelected
-#	var cardInfo = cardDatabase.DATA[cardDatabase.get(cardName)]
 	
 	SummonAnEnemy(22)
 	SummonAnEnemy(23)
@@ -130,7 +125,6 @@ func InstanceNewCard(nameOfNewCard):
 
 
 func DrawCard(amount = 1):
-	print("AMOUNT = ", amount)
 	for i in range(amount):
 		if cardsInHand.size() == maxHandSize:
 			return

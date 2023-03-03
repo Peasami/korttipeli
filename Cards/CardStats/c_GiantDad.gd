@@ -5,4 +5,4 @@ func _init():
 	legalTargets = "OwnEmpty"
 
 func SpellEffect():
-	SummonAUnit(cardName, targetOfCard)
+	Actions.SummonAUnit(cardName, targetOfCard)
