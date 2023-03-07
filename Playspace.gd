@@ -93,7 +93,7 @@ func _ready():
 		var newCardActions = newCard.get_node("ActionLibrary")
 		$ActionLibraryBase.ConnectSignals(newCardActions)
 	
-	
+	SummonAUnit(6, "Hero1")
 	SummonAnEnemy(22)
 	SummonAnEnemy(23)
 	SummonAnEnemy(29)
@@ -183,12 +183,12 @@ func _on_Card_summon(unitName, slotToSummonAUnit):
 	newUnit.SetCurrentSlot(slotToSummonAUnit)
 
 func SummonAUnit(slotToSummonAUnit, unitName):
-	var unitInfo = cardDatabase.DATA[cardDatabase.get(unitName)]
-	var path = unitInfo[7]
+	var path = "res://Units/UnitEffects/"+unitName+".tscn"
+	print(path)
 	var newUnit = load(path).instance()
 	newUnit.rect_position = $CardSlots.get_child(slotToSummonAUnit).rect_position
-	newUnit.SetCurrentSlot(slotToSummonAUnit)
 	$Units.add_child(newUnit)
+	newUnit.SetCurrentSlot(slotToSummonAUnit)
 
 func PutCardInGraveyard(cardName):
 	MoveCardBetweenZones(cardName, cardsInHand, cardsInGraveyard)

@@ -253,18 +253,4 @@ func FindTargetFromSlotNumber(slotNumber, targetsToAffect):
 func SpellEffect():
 	pass
 
-func DealDamage(amount, target = targetOfCard):
-	if target != null:
-		target.TakeDamage(int(cardAttack))
 
-func SummonAUnit(summonedUnitName, slotNumber):
-	emit_signal("summon_unit", summonedUnitName, slotNumber)
-
-	#WIP__________________________
-func AreaDamage(dmg, xSize, ySize, targetsToAffect):
-	var stp = slotToPlayCardOn
-	var slotNumbersToAffect = [stp-5, stp-4, stp-3, stp-1, stp, stp+1, stp+3, stp+4, stp+5]
-	for i in slotNumbersToAffect:
-		if i >= 16 && i <= 31:
-			var enemyTarget = FindTargetFromSlotNumber(i, targetsToAffect)
-			DealDamage(dmg, enemyTarget)

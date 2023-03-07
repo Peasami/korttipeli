@@ -12,8 +12,8 @@ enum{
 	fromMouseToHand
 }
 
-onready var CardDatabase = preload("res://Cards/CardDatabase.gd")
-onready var unitInfo = CardDatabase.DATA[CardDatabase.get(unitName)]
+#onready var CardDatabase = preload("res://Cards/CardDatabase.gd")
+#onready var unitInfo = CardDatabase.DATA[CardDatabase.get(unitName)]
 
 var graveYardPos = Vector2(0, 0)
 
@@ -26,6 +26,7 @@ var maxHealth
 var currentHealth
 var unitAttack
 var unitHealth
+var isHero = false
 
 var isInMouse = false
 var state
@@ -43,20 +44,17 @@ var unitSize = Vector2(75, 75)
 
 func _ready():
 	rect_size = unitSize
-	print($Focus.rect_size)
-
-	print(unitInfo) # prints all fields of card
 	
 	# Gets info from fields and stores in var's
-	unitType = str(unitInfo[0]) 
-	unitName = str(unitInfo[1])
-	unitAttack = int(unitInfo[3])
-	maxHealth = int(unitInfo[4])
-	unitText = str(unitInfo[5])
-	
-	$Bar1/Label.text = unitName
-	currentHealth = maxHealth
-	UpdateStats()
+#	unitType = str(unitInfo[0]) 
+#	unitName = str(unitInfo[1])
+#	unitAttack = int(unitInfo[3])
+#	maxHealth = int(unitInfo[4])
+#	unitText = str(unitInfo[5])
+#
+#	$Bar1/TextureRect/Label.text = unitName
+#	currentHealth = maxHealth
+#	UpdateStats()
 	
 	
 	

@@ -51,3 +51,8 @@ func FindAreaSlots(xSize, ySize, targetsToAffect, slotPlayedOn):
 	for i in slotNumbersToAffect:
 		if i >= 16 && i <= 31:
 			target.append(FindTargetFromSlotNumber(i, targetsToAffect))
+
+
+func DiscardSelectCard():
+	
+	pass

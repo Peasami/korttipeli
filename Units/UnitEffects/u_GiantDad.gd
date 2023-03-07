@@ -1,4 +1,4 @@
-extends "res://Units/UnitBase.gd"
+extends "res://Units/SummonedUnitBase.gd"
 
 func _init():
 	SetName("GiantDad")
