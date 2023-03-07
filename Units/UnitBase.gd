@@ -27,12 +27,14 @@ var currentHealth
 var unitAttack
 var unitHealth
 var isHero = false
+var moveSpeed = 1
+var movesLeft
 
 var isInMouse = false
-var state
-var alreadyWentBack
+var state = inPlay
+var alreadyWentBack = false
 var alreadyWentToSlot
-var foundASlot
+var foundASlot = false
 var previousPos
 var animationTime = 0.1
 
@@ -44,20 +46,10 @@ var unitSize = Vector2(75, 75)
 
 func _ready():
 	rect_size = unitSize
-	
-	# Gets info from fields and stores in var's
-#	unitType = str(unitInfo[0]) 
-#	unitName = str(unitInfo[1])
-#	unitAttack = int(unitInfo[3])
-#	maxHealth = int(unitInfo[4])
-#	unitText = str(unitInfo[5])
-#
-#	$Bar1/TextureRect/Label.text = unitName
-#	currentHealth = maxHealth
-#	UpdateStats()
-	
-	
-	
+	currentHealth = maxHealth
+	movesLeft = moveSpeed
+	UpdateStats()
+
 
 func _physics_process(delta):
 	match state:
@@ -90,9 +82,10 @@ func MoveUnit(event):
 			# Handles dropping on cardslots
 			var CardSlots = $'../../CardSlots'
 			var cardSlotEmpty = $'../../'.cardSlotEmpty
+			var moveableSlots = FindMoveableSlots(currentSlotNumber)
 			for i in range(CardSlots.get_child_count()): # Checks for each cardslot on board
 				# If the slot is Free
-				if cardSlotEmpty[i] == true && i >= minSlotValueForCard && i <= maxSlotValueForCard:
+				if cardSlotEmpty[i] == true && i >= minSlotValueForCard && i <= maxSlotValueForCard && i in moveableSlots && movesLeft > 0:
 					# Checks mouse is ontop of slot
 					var cardSlotPos = CardSlots.get_child(i).rect_position
 					var cardSlotSize = CardSlots.get_child(i).rect_size
@@ -100,6 +93,7 @@ func MoveUnit(event):
 					if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
 						previousPos = cardSlotPos
 						AnimateACard(animationTime, rect_position, cardSlotPos)
+						movesLeft -= 1
 						state = inPlay
 						cardSlotEmpty[i] = false
 						cardSlotEmpty[currentSlotNumber] = true
@@ -107,7 +101,6 @@ func MoveUnit(event):
 						foundASlot = true
 						isInMouse = false
 						break
-
 				# If there is another card in slot
 				elif cardSlotEmpty[i] == false && i != currentSlotNumber:
 					var cardSlotSize = CardSlots.get_child(i).rect_size
@@ -130,6 +123,10 @@ func MoveUnit(event):
 			foundASlot = false
 		else:
 			alreadyWentBack = false
+
+func FindMoveableSlots(startSlot):
+	var moveableSlots = [startSlot-5, startSlot-4, startSlot-3, startSlot-1, startSlot, startSlot+1, startSlot+3, startSlot+4, startSlot+5]
+	return moveableSlots
 
 func Summon(nameOfUnit, slotNumber):
 	unitName = nameOfUnit
@@ -190,3 +187,6 @@ func SetCurrentSlot(number):
 	var cardSlotEmpty = $'../../'.cardSlotEmpty
 	cardSlotEmpty[currentSlotNumber] = false
 	print("CurrentSlotNumber: ", currentSlotNumber)
+
+func ResetMoveSpeed():
+	movesLeft = moveSpeed

@@ -140,33 +140,41 @@ func MoveCard(event):
 				if isInMouse == true:
 					alreadyWentToHand = true
 					PutCardToHand()
+			
 			if event.is_action_released("left_click"):
 				if playerStats.IsEnoughMana(int(cardCost)) == false:
-					print("Not enough mana!")
 					PutCardToHand()
 				elif isInMouse == true && alreadyWentToHand == false:
-					var CardSlots = $'../../CardSlots'
-					var cardSlotEmpty = $'../../'.cardSlotEmpty
-					
-					for i in range(CardSlots.get_child_count()):
-						var cardSlotPos = CardSlots.get_child(i).rect_position - (cardSize - slotSize)/2
-						var cardSlotSize = CardSlots.get_child(i).rect_size
-						var localMousePos = CardSlots.get_child(i).get_local_mouse_position()
-						if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
-							slotToPlayCardOn = i
-							var foundTarget = FindTargetFromSlotNumber(slotToPlayCardOn, legalTargets)
-							if foundTarget != null:
-								targetOfCard = foundTarget
-								playerStats.ReduceMana(int(cardCost))
-								SpellEffect()
-								$'../../'.ReorganizeHand(positionInHand)
-								$'../../'.ReduceHandSize(1)
-								PutCardToGraveyard()
-								foundASlot = true
-					if foundASlot == false:
+					targetOfCard = CheckSlotUnderMouse()
+					if targetOfCard != null:
+						playerStats.ReduceMana(int(cardCost))
+						SpellEffect()
+						$'../../'.ReorganizeHand(positionInHand)
+						$'../../'.ReduceHandSize(1)
+						PutCardToGraveyard()
+						foundASlot = true
+					else:
 						PutCardToHand()
 
-
+func CheckSlotUnderMouse():
+	var CardSlots = $'../../CardSlots'
+	var cardSlotEmpty = $'../../'.cardSlotEmpty
+	for i in range(CardSlots.get_child_count()):
+		var cardSlotPos = CardSlots.get_child(i).rect_position - (cardSize - slotSize)/2
+		var cardSlotSize = CardSlots.get_child(i).rect_size
+		var localMousePos = CardSlots.get_child(i).get_local_mouse_position()
+		if localMousePos.x < cardSlotSize.x && localMousePos.x > 0 && localMousePos.y < cardSlotSize.y && localMousePos.y > 0:
+			var foundTarget = FindTargetFromSlotNumber(i, legalTargets)
+			if foundTarget != null:
+				return foundTarget
+#				targetOfCard = foundTarget
+#				playerStats.ReduceMana(int(cardCost))
+#				SpellEffect()
+#				$'../../'.ReorganizeHand(positionInHand)
+#				$'../../'.ReduceHandSize(1)
+#				PutCardToGraveyard()
+#				foundASlot = true
+	return null
 
 # Updates every frame (if mouse is moving over TextureButton)
 func _physics_process(delta):

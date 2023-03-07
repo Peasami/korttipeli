@@ -93,6 +93,7 @@ func _ready():
 		var newCardActions = newCard.get_node("ActionLibrary")
 		$ActionLibraryBase.ConnectSignals(newCardActions)
 	
+	DrawCard(5)
 	SummonAUnit(6, "Hero1")
 	SummonAnEnemy(22)
 	SummonAnEnemy(23)
@@ -255,4 +256,6 @@ func _on_EndTurn_turnEnded(nextTurnNumber):
 		i += 1
 	for Card in tempArrayForCards:
 		DiscardCard(Card.positionInHand)
+	for Unit in $Units.get_children():
+		Unit.ResetMoveSpeed()
 	DrawCard(5)

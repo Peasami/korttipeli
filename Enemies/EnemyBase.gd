@@ -1,7 +1,7 @@
 extends MarginContainer
 
 var currentHealth
-var enemyAttack = 2
+var enemyAttack = 5
 var maxHealth = 10
 var cardSlotPos
 onready var slotPos
@@ -15,7 +15,6 @@ func _ready():
 	ConnectToEndTurn()
 	UpdateStats()
 	CheckPossibleAttackSlots()
-	Attack()
 
 func _process(delta):
 	if Input.is_action_just_released("ui_left"):
